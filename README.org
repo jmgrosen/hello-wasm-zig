@@ -1,0 +1,23 @@
+* hello wasm
+
+a little shootout between Zig / WASM and JS
+
+run in Chrome (Safari won't let you use =performance.now=
+without trickery that is beyond me)
+by, e.g. serving to localhost
+
+#+begin_src bash
+python3 -m http.server
+#+end_src
+
+compile the wasm from source by downloading [[https://ziglang.org][Zig]] (tested with version 0.12.0)
+and running
+
+#+begin_src bash
+zig build-exe src/main.zig -target wasm32-freestanding -fno-entry -OReleaseFast --export=trianglePTR
+#+end_src
+
+you can alter the parameters of the shootout in =test.js=, for example the number of samples,
+the number of iterations, the frequency, phase input, sample rate, etc.
+
+the function TrianglePTR is an implementation of the Polynomial Transition Region anti-aliasing algorithm to generate an asymmetric triangle wave.

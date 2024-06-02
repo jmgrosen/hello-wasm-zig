@@ -27,11 +27,19 @@ export fn trianglePTR(freq: f64, phase: f64, sync: f64, width: f64, sr: f64) f64
     return algorithm(pos, step, step2, step3, w, a, b, c, dc, p1, p2, p3);
 }
 
+export fn trianglePTRBuf(buf: [*]f64, len: u32, freq: f64, phase: f64, sync: f64, width: f64, sr: f64) void {
+    var i: u32 = 0;
+    while (i < len) {
+        buf[i] = trianglePTRPerBuf(freq, phase, sync, width, sr);
+        i += 1;
+    }
+}
+
 var buf_phase: f64 = 0;
 var buf_phase_in: f64 = 0;
 var buf_sync_in: f64 = 0;
 export fn trianglePTRPerBuf(freq: f64, phase: f64, sync: f64, width: f64, sr: f64) f64 {
-    var pos = ps_phase;
+    var pos = buf_phase;
     const step = freq / sr;
     const step2 = 2 * step;
     const step3 = 3 * step;
@@ -44,15 +52,15 @@ export fn trianglePTRPerBuf(freq: f64, phase: f64, sync: f64, width: f64, sr: f6
     const p1 = c * samples;
     const p2 = p1 * samples;
     const p3 = p2 * samples / 12.0;
-    if (sync > 0 and ps_sync_in <= 0)
+    if (sync > 0 and buf_sync_in <= 0)
         pos = 0
     else
-        pos += (phase - ps_phase_in) + step;
+        pos += (phase - buf_phase_in) + step;
     while (pos >= 1) pos -= 1;
     while (pos < 0) pos += 1;
-    ps_sync_in = sync;
-    ps_phase_in = phase;
-    ps_phase = pos;
+    buf_sync_in = sync;
+    buf_phase_in = phase;
+    buf_phase = pos;
     return algorithm(pos, step, step2, step3, w, a, b, c, dc, p1, p2, p3);
 }
 

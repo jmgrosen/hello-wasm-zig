@@ -13,14 +13,7 @@ const width = 0.5
 
 console.log("helloooo");
 
-const memory = new WebAssembly.Memory({
-    initial: 1,
-    maximum: 100,
-})
-
-WebAssembly.instantiate(mod, {
-    js: { mem: memory },
-}).then(result => {
+WebAssembly.instantiate(mod).then(result => {
 
   // let jsBuf = new Float64Array(magic_number);
   // for (let i = 0; i < magic_number; i++) {
@@ -44,6 +37,7 @@ WebAssembly.instantiate(mod, {
 
     let jsBuf = new Float64Array(magic_number)
     let zigBuf = new Float64Array(magic_number)
+    const zigInternalPtr = result.instance.exports.allocFloatBuf(magic_number)
     const iterations = 1000
     
     let per_sum = 0.0
@@ -66,9 +60,20 @@ WebAssembly.instantiate(mod, {
         js_sum += (end - start)
     }
 
+    let internal_sum = 0.0
+    for (let j = 0; j < iterations; j++) {
+        const start = performance.now();
+        result.instance.exports.trianglePTRBuf(zigInternalPtr, magic_number, freq, 0, 0, width, 44_100)
+        const end = performance.now();
+        internal_sum += (end - start)
+    }
+
     console.log("JAVASCRIPT: " + (js_sum / iterations))
     console.log("ZIG: " + (per_sum / iterations))
+    console.log("ZIG INTERNAL: " + (internal_sum / iterations))
 
+    const zigInternalBuf = new Float64Array(result.instance.exports.memory.buffer, zigInternalPtr, magic_number);
+    console.log(zigInternalBuf)
     console.log(zigBuf)
     console.log(jsBuf)
     
